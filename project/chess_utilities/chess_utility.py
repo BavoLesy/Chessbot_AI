@@ -9,11 +9,7 @@ class ChessUtility(Utility):
 
     # Calculate the amount of white pieces minus the amount of black pieces
     def board_value(self, board: chess.Board):
-
-
-
-        return self.score
-
+        return self.material_value(board) + self.king_safety(board, chess.WHITE) - self.king_safety(board, chess.BLACK)
 
     def material_value(self, board: chess.Board):
 
@@ -37,15 +33,13 @@ class ChessUtility(Utility):
         n_black += len(board.pieces(piece_type=chess.QUEEN, color=chess.BLACK)) * queen_value
         return n_white - n_black
 
-    def king_safety(self, board: chess.Board):
+
+    def king_safety(self, board: chess.Board, color: bool):
         king_safety = 0
-        white_king = board.king(color=chess.WHITE)
-        black_king = board.king(color=chess.BLACK)
-        next_white = self.next_to_king(board, chess.WHITE)
-        next_black = self.next_to_king(board, chess.BLACK)
-        for square in next_white:
-            safety = king_safety + len(list(board.attackers(chess.WHITE, square)))
-        for square in next_black:
-            safety = king_safety + len(list(board.attackers(chess.BLACK, square)))
+        king = board.king(color)
+        if king is not None:
+            next_to_king = self.next_to_king(board, color)
+            for square in next_to_king:
+                king_safety = king_safety + len(list(board.attackers(color, square)))
         return king_safety
 
