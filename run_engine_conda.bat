@@ -1,0 +1,1 @@
+CALL conda.bat activate AI_LAB4_Chess & python -m project.chess_engines.chess_engine
