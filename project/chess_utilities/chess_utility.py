@@ -1,63 +1,154 @@
 import chess
 from project.chess_utilities.utility import Utility
 
+pawn_table = [
+    0, 0, 0, 0, 0, 0, 0, 0,
+    5, 10, 10, -20, -20, 10, 10, 5,
+    5, -5, -10, 0, 0, -10, -5, 5,
+    0, 0, 0, 20, 20, 0, 0, 0,
+    5, 5, 10, 25, 25, 10, 5, 5,
+    10, 10, 20, 30, 30, 20, 10, 10,
+    50, 50, 50, 50, 50, 50, 50, 50,
+    0, 0, 0, 0, 0, 0, 0, 0]
+
+knights_table = [
+    -50, -40, -30, -30, -30, -30, -40, -50,
+    -40, -20,   0,   5,   5,   0, -20, -40,
+    -30,   5,  10,  15,  15,  10,   5, -30,
+    -30,   0,  15,  20,  20,  15,   0, -30,
+    -30,   5,  15,  20,  20,  15,   5, -30,
+    -30,   0,  10,  15,  15,  10,   0, -30,
+    -40, -20,   0,   0,   0,   0, -20, -40,
+    -50, -40, -30, -30, -30, -30, -40, -50]
+
+
+
+bishops_table = [
+    -20, -10, -10, -10, -10, -10, -10, -20,
+    -10, 5, 0, 0, 0, 0, 5, -10,
+    -10, 10, 10, 10, 10, 10, 10, -10,
+    -10, 0, 10, 10, 10, 10, 0, -10,
+    -10, 5, 5, 10, 10, 5, 5, -10,
+    -10, 0, 5, 10, 10, 5, 0, -10,
+    -10, 0, 0, 0, 0, 0, 0, -10,
+    -20, -10, -10, -10, -10, -10, -10, -20]
+rooks_table = [
+    0, 0, 0, 5, 5, 0, 0, 0,
+    -5, 0, 0, 0, 0, 0, 0, -5,
+    -5, 0, 0, 0, 0, 0, 0, -5,
+    -5, 0, 0, 0, 0, 0, 0, -5,
+    -5, 0, 0, 0, 0, 0, 0, -5,
+    -5, 0, 0, 0, 0, 0, 0, -5,
+    5, 10, 10, 10, 10, 10, 10, 5,
+    0, 0, 0, 0, 0, 0, 0, 0]
+queens_table = [
+    -20, -10, -10, -5, -5, -10, -10, -20,
+    -10, 0, 0, 0, 0, 0, 0, -10,
+    -10, 5, 5, 5, 5, 5, 0, -10,
+    0, 0, 5, 5, 5, 5, 0, -5,
+    -5, 0, 5, 5, 5, 5, 0, -5,
+    -10, 0, 5, 5, 5, 5, 0, -10,
+    -10, 0, 0, 0, 0, 0, 0, -10,
+    -20, -10, -10, -5, -5, -10, -10, -20]
+kings_table_middlegame = [
+    20, 30, 10, 0, 0, 10, 30, 20,
+    20, 20, 0, 0, 0, 0, 20, 20,
+    -10, -20, -20, -20, -20, -20, -20, -10,
+    -20, -30, -30, -40, -40, -30, -30, -20,
+    -30, -40, -40, -50, -50, -40, -40, -30,
+    -30, -40, -40, -50, -50, -40, -40, -30,
+    -30, -40, -40, -50, -50, -40, -40, -30,
+    -30, -40, -40, -50, -50, -40, -40, -30]
+kings_table_endgame = [
+    -50, -30, -30, -30, -30, -30, -30, -50,
+    -30, -30, 0, 0, 0, 0, -30, -30,
+    -30, -10, 20, 30, 30, 20, -10, -30,
+    -30, -10, 30, 40, 40, 30, -10, -30,
+    -30, -10, 30, 40, 40, 30, -10, -30,
+    -30, -10, 20, 30, 30, 20, -10, -30,
+    -30, -20, -10, 0, 0, -10, -20, -30,
+    -50, -40, -30, -20, -20, -30, -40, -50]
+
+pawn_value = 100
+knight_value = 320
+bishop_value = 330
+rook_value = 500
+queen_value = 900
+king_value = 200000
+
 
 class ChessUtility(Utility):
     def __init__(self) -> None:
         self.score = 0
+        self.endgame = False
 
     def board_value(self, board: chess.Board):
-        return self.material_value(board) + self.king_safety(board, chess.WHITE) - self.king_safety(board, chess.BLACK)
+        if board.is_checkmate():
+            if board.turn:
+                return -9999
+            else:
+                return 9999
+        if board.is_stalemate():
+            return 0
+        if board.is_insufficient_material():
+            return 0
+        if len(board.pieces(chess.QUEEN, not board.turn)) == 0 and len(
+                board.pieces(chess.QUEEN, board.turn)) == 0 or sum(board.piece_map()) <= 8:
+            self.endgame = True
+
+
+
+        # print("material value: ", self.material_value(board))
+        # print("piecesquare: ", self.piecesquare_value(board))
+        # print("mobility: ", self.mobility_value(board))
+        return self.material_value(board) * 1 + self.piecesquare_value(board) * 1 + self.mobility_value(board) * 1
 
     # Calculate the amount of white pieces minus the amount of black pieces, each with a given value (weight)
     def material_value(self, board: chess.Board):
+        material_value = 0
+        material_value += len(board.pieces(chess.PAWN, board.turn)) * pawn_value
+        material_value += len(board.pieces(chess.BISHOP, board.turn)) * bishop_value
+        material_value += len(board.pieces(chess.KNIGHT, board.turn)) * knight_value
+        material_value += len(board.pieces(chess.ROOK, board.turn)) * rook_value
+        material_value += len(board.pieces(chess.QUEEN, board.turn)) * queen_value
+        material_value += len(board.pieces(chess.KING, board.turn)) * king_value
 
-        pawn_value = 100
-        knight_value = 320
-        bishop_value = 330
-        rook_value = 500
-        queen_value = 900
-        n_white = 0
-        n_white += len(board.pieces(piece_type=chess.PAWN, color=chess.WHITE)) * pawn_value
-        n_white += len(board.pieces(piece_type=chess.BISHOP, color=chess.WHITE)) * bishop_value
-        n_white += len(board.pieces(piece_type=chess.KNIGHT, color=chess.WHITE)) * knight_value
-        n_white += len(board.pieces(piece_type=chess.ROOK, color=chess.WHITE)) * rook_value
-        n_white += len(board.pieces(piece_type=chess.QUEEN, color=chess.WHITE)) * queen_value
+        material_value_enemy = 0
+        material_value_enemy += len(board.pieces(chess.PAWN, not board.turn)) * pawn_value
+        material_value_enemy += len(board.pieces(chess.BISHOP, not board.turn)) * bishop_value
+        material_value_enemy += len(board.pieces(chess.KNIGHT, not board.turn)) * knight_value
+        material_value_enemy += len(board.pieces(chess.ROOK, not board.turn)) * rook_value
+        material_value_enemy += len(board.pieces(chess.QUEEN, not board.turn)) * queen_value
+        material_value_enemy += len(board.pieces(chess.KING, not board.turn)) * king_value
+        return material_value - material_value_enemy
 
-        n_black = 0
-        n_black += len(board.pieces(piece_type=chess.PAWN, color=chess.BLACK)) * pawn_value
-        n_black += len(board.pieces(piece_type=chess.BISHOP, color=chess.BLACK)) * bishop_value
-        n_black += len(board.pieces(piece_type=chess.KNIGHT, color=chess.BLACK)) * knight_value
-        n_black += len(board.pieces(piece_type=chess.ROOK, color=chess.BLACK)) * rook_value
-        n_black += len(board.pieces(piece_type=chess.QUEEN, color=chess.BLACK)) * queen_value
-        return n_white - n_black
+    def piecesquare_value(self, board: chess.Board):
+        if self.endgame:
+            kings_table = kings_table_endgame
+        else:
+            kings_table = kings_table_middlegame
+        pawnsq = sum([pawn_table[i] for i in board.pieces(chess.PAWN, board.turn)])
+        pawnsq += sum([-pawn_table[chess.square_mirror(i)] for i in board.pieces(chess.PAWN, not board.turn)])
+        knightsq = sum([knights_table[i] for i in board.pieces(chess.KNIGHT, board.turn)])
+        knightsq += sum([-knights_table[chess.square_mirror(i)] for i in board.pieces(chess.KNIGHT, not board.turn)])
+        bishopsq = sum([bishops_table[i] for i in board.pieces(chess.BISHOP, board.turn)])
+        bishopsq += sum([-bishops_table[chess.square_mirror(i)] for i in board.pieces(chess.BISHOP, not board.turn)])
+        rooksq = sum([rooks_table[i] for i in board.pieces(chess.ROOK, board.turn)])
+        rooksq += sum([-rooks_table[chess.square_mirror(i)] for i in board.pieces(chess.ROOK, not board.turn)])
+        queensq = sum([queens_table[i] for i in board.pieces(chess.QUEEN, board.turn)])
+        queensq += sum([-queens_table[chess.square_mirror(i)] for i in board.pieces(chess.QUEEN, not board.turn)])
+        kingsq = sum([kings_table[i] for i in board.pieces(chess.KING, board.turn)])
+        kingsq += sum([-kings_table[chess.square_mirror(i)] for i in board.pieces(chess.KING, not board.turn)])
+        return pawnsq + knightsq + bishopsq + rooksq + queensq + kingsq
 
-    # Mobility of the pawns is a measure of how many squares the pawn can move to
-    def mobility(self, board: chess.Board, color: bool):
+    # Mobility is a measure of how many squares a piece can move to
+    def mobility_value(self, board: chess.Board):
         mobility = 0
-        for square in board.pieces(color, chess.PAWN):
-            mobility = mobility + len(list(board.attackers(not color, square)))
+        moves = list(board.legal_moves)
+        for move in moves:
+            if board.piece_at(move.from_square).color == board.turn:
+                mobility += 1
+            else:
+                mobility -= 1
         return mobility
-
-    # King safety is a measure of how safe the king is
-    def king_safety(self, board: chess.Board, color: bool):
-        king_safety = 0
-        king = board.king(color)
-        if king is not None:
-            next_to_king = self.next_to_king(board, color)
-            for square in next_to_king:
-                king_safety = king_safety + len(list(board.attackers(color, square)))
-        return king_safety
-
-    # Next to king is a list of squares next to the king. This is used to calculate king safety.
-    # If there are pieces next to the king, the king is not safe
-    def next_to_king(self, board: chess.Board, color: bool):
-        king = board.king(color)
-        next_to_king = []
-        for square in chess.SquareSet(chess.BB_RANK_1 | chess.BB_RANK_8 | chess.BB_FILE_A | chess.BB_FILE_H):
-            if square != king:
-                if board.piece_at(square) is None:
-                    next_to_king.append(square)
-        return next_to_king
-
 
