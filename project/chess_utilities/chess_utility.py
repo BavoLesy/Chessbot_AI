@@ -144,8 +144,7 @@ class ChessUtility(Utility):
     # Mobility is a measure of how many squares a piece can move to
     def mobility_value(self, board: chess.Board):
         mobility = 0
-        moves = list(board.legal_moves)
-        for move in moves:
+        for move in board.legal_moves:
             if board.piece_at(move.from_square).color == board.turn:
                 mobility += 1
             else:

@@ -24,11 +24,6 @@ def opening_move(board):
 
 
 def endgame_move(board):
-    """
-
-    :param board:
-    :return:
-    """
     best_move = board.legal_moves.random_choice()
     dirname = os.path.dirname(__file__)
     directory = os.path.join(dirname, '../data/syzygy')

@@ -14,7 +14,7 @@ class ExampleAgent(Agent):
         self.author = "J. Duym & A. Troch"
         
 
-    # This agent does not perform any searching, it sinmply iterates trough all the moves possible and picks the one with the highest utility
+    # This agent does not perform any searching, it simply iterates trough all the moves possible and picks the one with the highest utility
     def calculate_move(self, board: chess.Board):
         
         start_time = time.time()
