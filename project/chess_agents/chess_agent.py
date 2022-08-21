@@ -66,8 +66,7 @@ def endgame_move(board):
 class ChessAgent(Agent):
     # Initialize your agent with whatever parameters you want
     def __init__(self, utility: Utility, time_limit_move: float) -> None:
-        super().__init__(utility,
-                         time_limit_move - 0.5)  # Time limit - 0.5, so we have time for our program and no accidental taking too long
+        super().__init__(utility, time_limit_move - 0.5)  # Time limit - 0.5, so we have time for our program and no accidental taking too long
         self.name = "Search Agent"
         self.author = "B. Lesy & O. Rommens"
         self.opening = True  # True at the start of the game
@@ -88,7 +87,7 @@ class ChessAgent(Agent):
             best_move = self.iterative_deepening(board, start_time)
             if board.is_irreversible(best_move):  # If the move is reversible, we clear out the transposition table because earlier entries are not valid anymore
                 self.transposition_table.clear()
-        print("This move took " + str(time.time() - start_time) + " seconds")
+        print("Time searched: " + str(time.time() - start_time) + " seconds")
         return best_move
 
     def iterative_deepening(self, board, start_time):
@@ -97,7 +96,6 @@ class ChessAgent(Agent):
         if key in self.transposition_table:
             tt_score, tt_move = self.transposition_table[key]
             return tt_move  # Return the move from the transposition table if we have it
-
         # If we don't have it, we calculate the best move using negamax with alpha-beta pruning and iterative deepening
         alpha = -100000
         beta = 100000
@@ -130,7 +128,7 @@ class ChessAgent(Agent):
         if key in self.transposition_table:
             tt_score = self.transposition_table[key][0]
             return tt_score
-        best_score = -9999
+        best_score = -99999
         best_move = chess.Move.null()
         if depth == 0:
             return self.quiescence(board, alpha, beta, start_time)  # self.utility.board_value(board)
@@ -153,6 +151,7 @@ class ChessAgent(Agent):
         return best_score
 
     def quiescence(self, board, alpha, beta, start_time):
+        # Combat the horizon effect, and look deeper at capture moves
         score = self.utility.board_value(board)
         if score >= beta:
             return score
